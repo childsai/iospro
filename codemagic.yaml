@@ -11,9 +11,15 @@ workflows:
         - push
 
     scripts:
-      - name: Get Flutter deps
+      - name: Get Flutter dependencies
         script: |
           flutter pub get
+
+      - name: Install CocoaPods
+        script: |
+          cd ios
+          pod install --repo-update
+          cd ..
 
       - name: Build unsigned .app
         script: |
@@ -23,25 +29,23 @@ workflows:
 
       - name: Archive .app to .xcarchive
         script: |
-          # 1) Create an Xcode archive from the .app bundle.
-          #    Change "Runner" if your target name is different.
           xcodebuild \
             -workspace ios/Runner.xcworkspace \
             -scheme Runner \
             -configuration Release \
             -archivePath build/ios/Runner.xcarchive \
-            BUILD_DIR=build/ios
+            BUILD_DIR=build/ios \
+            CODE_SIGN_STYLE=Automatic \
+            -allowProvisioningUpdates
 
-      - name: Export .ipa from .xcarchive
+      - name: Export signed .ipa
         script: |
-          # 2) Export the .xcarchive into a signed .ipa
-          #    This requires a valid provisioning profile (set in CodeMagic UI).
           xcodebuild \
             -exportArchive \
             -archivePath build/ios/Runner.xcarchive \
             -exportPath build/ios/ipa \
-            -exportOptionsPlist ios/ExportOptions.plist
+            -exportOptionsPlist ios/ExportOptions.plist \
+            -allowProvisioningUpdates
 
     artifacts:
-      # Keep the signed .ipa so you can download it from CodeMagic
       - build/ios/ipa/*.ipa

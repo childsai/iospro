@@ -3,10 +3,6 @@
   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <!--
-      “development” → Xcode will export using the development provisioning profile
-      that CodeMagic generated for your free Apple ID.
-    -->
     <key>method</key>
     <string>development</string>
   </dict>
