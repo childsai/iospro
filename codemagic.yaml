@@ -5,16 +5,43 @@ workflows:
       flutter: stable
       xcode: latest
       cocoapods: default
+
     triggering:
       events:
         - push
-    scripts:
-      - name: Get dependencies
-        script: flutter pub get
 
-      - name: Build iOS release
-        script: flutter build ios --release --no-codesign
+    scripts:
+      - name: Get Flutter deps
+        script: |
+          flutter pub get
+
+      - name: Build unsigned .app
+        script: |
+          flutter build ios \
+            --release \
+            --no-codesign
+
+      - name: Archive .app to .xcarchive
+        script: |
+          # 1) Create an Xcode archive from the .app bundle.
+          #    Change "Runner" if your target name is different.
+          xcodebuild \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath build/ios/Runner.xcarchive \
+            BUILD_DIR=build/ios
+
+      - name: Export .ipa from .xcarchive
+        script: |
+          # 2) Export the .xcarchive into a signed .ipa
+          #    This requires a valid provisioning profile (set in CodeMagic UI).
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/ios/Runner.xcarchive \
+            -exportPath build/ios/ipa \
+            -exportOptionsPlist ios/ExportOptions.plist
 
     artifacts:
-      - build/ios/iphoneos/*.ipa
-      - build/ios/iphoneos/Runner.app
+      # Keep the signed .ipa so you can download it from CodeMagic
+      - build/ios/ipa/*.ipa
