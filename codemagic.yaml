@@ -1,0 +1,20 @@
+workflows:
+  ios-release:
+    name: iOS Release Workflow
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events:
+        - push
+    scripts:
+      - name: Get dependencies
+        script: flutter pub get
+
+      - name: Build iOS release
+        script: flutter build ios --release --no-codesign
+
+    artifacts:
+      - build/ios/iphoneos/*.ipa
+      - build/ios/iphoneos/Runner.app
